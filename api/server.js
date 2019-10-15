@@ -2,9 +2,11 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const sessions = require('express-session');// session middleware
+const KnexSessionStore = require('connect-session-knex')(sessions);// <<<< stores sessions
 
 const authRouter = require('../auth/auth-router.js');
 const usersRouter = require('../users/users-router.js');
+const knexConfig = require('../database/dbConfig');
 
 const server = express();
 
@@ -19,6 +21,11 @@ const sessionConfiguration = {
   },
   resave: false,
   saveUninitialized: true, //read about GDPR complaince, false default, have client send message about do you want to save cookies. currently set to true for developement 
+  store: new KnexSessionStore({
+    knex: knexConfig,
+    createtable: true,//automatically create the session table
+    clearInterval: 1000 * 60 * 30,// delete expired sessions every 30 mins
+  }),
 };
 
 //global middleware
